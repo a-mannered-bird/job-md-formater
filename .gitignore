@@ -1,3 +1,6 @@
+*.sublime-workspace
+.DS_STORE
+
 # Logs
 logs
 *.log
