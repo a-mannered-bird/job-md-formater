@@ -1,5 +1,7 @@
 *.sublime-workspace
 .DS_STORE
+input-files/
+output-files/
 
 # Logs
 logs
