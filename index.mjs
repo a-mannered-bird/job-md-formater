@@ -8,6 +8,7 @@ import {
     removeYAMLFrontMatter,
     removeMarkdownLinksAndImages,
 } from './utils.mjs'
+import createAssistant from './job-ad-analyzer.mjs'
 
 // Main function
 function processMarkdownFiles() {
@@ -43,16 +44,15 @@ function processMarkdownFiles() {
 
         // Remove markdown links and images from `filteredContents`
         filteredContents = removeMarkdownLinksAndImages(filteredContents)
+        createAssistant()
 
-        // console.log(filteredContents)
+        // // Add "Foo: Bar" to the YAML front matter in `originalContents`
+        // originalContents = addFooBarToYAML(originalContents)
 
-        // Add "Foo: Bar" to the YAML front matter in `originalContents`
-        originalContents = addFooBarToYAML(originalContents)
-
-        // Create the duplicate markdown file in the output folder
-        const outputFilePath = path.join(outputPath, file)
-        fs.writeFileSync(outputFilePath, originalContents, 'utf-8')
-        console.log(`Processed and saved: ${outputFilePath}`)
+        // // Create the duplicate markdown file in the output folder
+        // const outputFilePath = path.join(outputPath, file)
+        // fs.writeFileSync(outputFilePath, originalContents, 'utf-8')
+        // console.log(`Processed and saved: ${outputFilePath}`)
     })
 }
 
