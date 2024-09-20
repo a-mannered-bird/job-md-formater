@@ -2,6 +2,7 @@
 .DS_STORE
 input-files/
 output-files/
+notes.md
 
 # Logs
 logs
