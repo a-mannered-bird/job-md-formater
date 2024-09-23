@@ -1,24 +1,38 @@
 import OpenAI from 'openai'
+import * as dotenv from 'dotenv'
+
+dotenv.config()
 const openai = new OpenAI()
 
-export const createAssistant = async () => {
-  const assistant = await openai.beta.assistants.create({
-    name: "Job ad analyzer",
-    instructions: "You are an assistant specialized in extracting data from job ads submitted to you. The user will send you job ads fully redacted in markdown format, you will analyze them and extract the informations detailed in the JSON response format attached. Whatever the language of the job ad, you should always answer in english.",
-    model: "gpt-4o",
-  })
+export const createAssistant = async (config) => {
+  // Create a new chat GPT assistant that will analyze the markdown job description
+  const assistant = await openai.beta.assistants.create(config)
 
+  // Create a new thread on the assistant
   const thread = await openai.beta.threads.create()
 
   return {assistant, thread}
 }
 
-export const createMessage = async () => {
+export const postMessageAndGetResponse = async (assistant_id, thread_id, content) => {
+  
+  // Post the user message to the thread
   const message = await openai.beta.threads.messages.create(
-    thread.id,
-    {
-      role: "user",
-      content: "I need to solve the equation `3x + 11 = 14`. Can you help me?"
-    }
+    thread_id, {role: "user", content}
   )
+
+  // Start a run on the thread -> AI is responding
+  let run = await openai.beta.threads.runs.createAndPoll(
+    thread_id, {assistant_id}
+  )
+
+  // Wait until run is finished to fetch the messages
+  if (run.status === 'completed') {
+    const messages = await openai.beta.threads.messages.list(
+      thread_id
+    )
+    return messages.data[0]
+  } else {
+    console.log(run.status)
+  }
 }

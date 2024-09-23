@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import * as path from 'path'
 
 // Helper function to check if the path exists
 export const checkOrCreateDir = (dirPath) => {
@@ -48,4 +49,40 @@ export const removeYAMLFrontMatter = (content) => {
 export const removeMarkdownLinksAndImages = (content) => {
     return content.replace(/!\[.*?\]\(.*?\)/g, '') // Remove images
                   .replace(/\[.*?\]\(.*?\)/g, '')  // Remove links
+}
+
+// Function to update or add key-value pair in .env file
+export const updateEnvFile = (key, value, envFilePath = '.env') => {
+    const filePath = path.resolve(envFilePath)
+
+    // Read the .env file
+    let envContent = ''
+    try {
+        envContent = fs.readFileSync(filePath, 'utf-8')
+    } catch (err) {
+        console.log(`Creating new .env file at ${filePath}`)
+    }
+
+    const lines = envContent.split('\n')
+    let keyFound = false
+    const newLines = lines.map(line => {
+        const [currentKey] = line.split('=')
+
+        // Check if the current line contains the key we want to update
+        if (currentKey === key) {
+            keyFound = true
+            return `${key}=${value}` // Update the key with the new value
+        }
+
+        return line
+    })
+
+    // If the key was not found, add it to the end of the file
+    if (!keyFound) {
+        newLines.push(`${key}=${value}`)
+    }
+
+    // Write the updated content back to the .env file
+    fs.writeFileSync(filePath, newLines.join('\n'), 'utf-8')
+    console.log(`✏️  Updated .env file: ${key}=${value}`)
 }
