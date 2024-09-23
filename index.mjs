@@ -1,9 +1,9 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as dotenv from 'dotenv'
+import matter from 'gray-matter'
 
 import {
-    addFooBarToYAML,
     checkOrCreateDir,
     collectMarkdownFiles,
     updateEnvFile,
@@ -18,6 +18,11 @@ import {
 
 import {response_format} from './response_format.mjs'
 
+dotenv.config() 
+const inputPath = process.env.INPUT_PATH || './input-files'
+const outputPath = process.env.OUTPUT_PATH || './output-files'
+let assistantId = process.env.ASSISTANT_ID
+let threadId = process.env.THREAD_ID
 
 const createAssistantAndStoreIds = async () => {
     console.log(`⏳ Creating a new chat GPT assistant and a new thread...`)
@@ -31,24 +36,38 @@ const createAssistantAndStoreIds = async () => {
             json_schema: response_format,
         }
     })
-    const ids = {
-        assistantId: response.assistant.id,
-        threadId: response.thread.id,
-    }
     console.log(`🤖 Assistant and thread created!`)
 
-    updateEnvFile('ASSISTANT_ID', ids.assistantId)
-    updateEnvFile('THREAD_ID', ids.threadId)
+    assistantId = response.assistant.id
+    threadId = response.thread.id
 
-    return ids
+    updateEnvFile('ASSISTANT_ID', assistantId)
+    updateEnvFile('THREAD_ID', threadId)
 }
 
-// Main function
-async function processMarkdownFiles() {
-    const inputPath = process.env.INPUT_PATH || './input-files'
-    const outputPath = process.env.OUTPUT_PATH || './output-files'
-    let assistantId = process.env.ASSISTANT_ID
-    let threadId = process.env.THREAD_ID
+const readAndFilterMarkdownFile = async (file) => {
+    console.log(`⏳  Reading "${file}"...`)
+    const filePath = path.join(inputPath, file)
+    const fileContents = fs.readFileSync(filePath, 'utf-8')
+
+    // Copy the contents into two variables
+    let originalContents = fileContents
+    let filteredContents = fileContents
+
+    // Remove YAML front matter from `filteredContents`
+    filteredContents = removeYAMLFrontMatter(filteredContents)
+
+    // Add the filename as an H1 title to `filteredContents`
+    const fileNameWithoutExt = path.basename(file, '.md').replace('(READ) - ', '')
+    filteredContents = `# ${fileNameWithoutExt}\n\n${filteredContents}`
+
+    // Remove markdown links and images from `filteredContents`
+    filteredContents = removeMarkdownLinksAndImages(filteredContents)
+    console.log(`💌 File contents filtered and ready to be sent!`)
+    return {originalContents, filteredContents}
+}
+
+const processMarkdownFiles = async () => {
 
     // Ensure input folder exists
     if (!process.env.INPUT_PATH) {
@@ -64,45 +83,43 @@ async function processMarkdownFiles() {
 
     // If the assistant doesn't exist yet, create and update the IDs.
     if (!assistantId || !threadId) {
-        const ids = await createAssistantAndStoreIds()
-        assistantId = ids.assistantId
-        threadId = ids.threadId
+        await createAssistantAndStoreIds()
     }
     
 
     markdownFiles.forEach(async file => {
-        console.log(`⏳  Reading "${file}"...`)
-        const filePath = path.join(inputPath, file)
-        const fileContents = fs.readFileSync(filePath, 'utf-8')
-
-        // Copy the contents into two variables
-        let originalContents = fileContents
-        let filteredContents = fileContents
-
-        // Remove YAML front matter from `filteredContents`
-        filteredContents = removeYAMLFrontMatter(filteredContents)
-
-        // Add the filename as an H1 title to `filteredContents`
-        const fileNameWithoutExt = path.basename(file, '.md').replace('(READ) - ', '')
-        filteredContents = `# ${fileNameWithoutExt}\n\n${filteredContents}`
-
-        // Remove markdown links and images from `filteredContents`
-        filteredContents = removeMarkdownLinksAndImages(filteredContents)
+        let {originalContents, filteredContents} = await readAndFilterMarkdownFile(file)
         
-        console.log(`🤖  File filtered! Submitting it to your chat GPT assistant...`)
+        console.log(`🤖 Submitting file contents to your chat GPT assistant...`)
         const latestMessage = await postMessageAndGetResponse(assistantId, threadId, filteredContents)
-        console.log(latestMessage.content[0].text)
+        const messageValue = latestMessage.content[0].text.value
+        const parsedMessage = JSON.parse(messageValue)
+        console.log(`📄 The results just came in!`, parsedMessage)
 
-        // // Add "Foo: Bar" to the YAML front matter in `originalContents`
-        // originalContents = addFooBarToYAML(originalContents)
+        const newMarkdownProperties = {
+            job_employer: parsedMessage.employer,
+            job_role: parsedMessage.role,
+            job_region: ['Solar System', 'The Moon'], // TODO: Hardcoded value because I'm looking in specific spaces
+            job_experience: parsedMessage.experience,
+            job_skills: parsedMessage.skills,
+            job_type: 'CDI',
+            job_hours: parsedMessage.work_hours,
+            job_ethical: parsedMessage.is_ethical,
+            job_flexibility: parsedMessage.is_flexible,
+            job_attractive: parsedMessage.is_attractive,
+        }
+        const convertedFile = matter(originalContents)
+        const outputContents = matter.stringify(convertedFile.content, {
+            ...convertedFile.data,
+            ...newMarkdownProperties,
+        })
 
-        // // Create the duplicate markdown file in the output folder
-        // const outputFilePath = path.join(outputPath, file)
-        // fs.writeFileSync(outputFilePath, originalContents, 'utf-8')
-        // console.log(`Processed and saved: ${outputFilePath}`)
+        // Create the duplicate markdown file in the output folder
+        const outputFilePath = path.join(outputPath, file)
+        fs.writeFileSync(outputFilePath, outputContents, 'utf-8')
+        console.log(`💾 Processed and saved: ${outputFilePath}`)
     })
 }
 
 // Execute the script
-dotenv.config()
 processMarkdownFiles()

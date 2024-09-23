@@ -25,20 +25,6 @@ export const collectMarkdownFiles = (dirPath) => {
     }
 }
 
-// Helper function to add "Foo: Bar" to the YAML front matter
-export const addFooBarToYAML = (content) => {
-    const yamlRegex = /^---\n[\s\S]*?\n---/
-    const match = content.match(yamlRegex)
-    if (match) {
-        const yamlContent = match[0]
-        const updatedYAML = yamlContent.replace(/---$/, 'Foo: Bar\n---')
-        return content.replace(yamlRegex, updatedYAML)
-    } else {
-        // If there's no YAML front matter, add it at the beginning
-        return `---\nFoo: Bar\n---\n${content}`
-    }
-}
-
 // Helper function to remove YAML front matter from content
 export const removeYAMLFrontMatter = (content) => {
     const yamlRegex = /^---\n[\s\S]*?\n---\n/
