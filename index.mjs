@@ -29,7 +29,7 @@ const createAssistantAndStoreIds = async () => {
     const response = await createAssistant({
         name: "Job ad analyzer",
         instructions: "You are an assistant specialized in extracting data from job ads submitted to you. The user will send you job ads fully redacted in markdown format, you will analyze them and extract the informations detailed in the JSON response format attached. Whatever the language of the job ad, you should always answer in english.",
-        model: "gpt-4o-2024-08-06", // TODO: Make it work with gpt-4o and not gpt-4o-mini
+        model: "gpt-4o-mini",
         temperature: 0.2,
         response_format: {
             type: "json_schema",
@@ -101,7 +101,7 @@ const processMarkdownFiles = async () => {
             job_role: parsedMessage.role,
             job_region: ['Solar System', 'The Moon'], // TODO: Hardcoded value because I'm looking in specific spaces
             job_experience: parsedMessage.experience,
-            job_skills: parsedMessage.skills,
+            job_skills: parsedMessage.skills.map(skill => skill.toLowerCase()),
             job_type: 'CDI',
             job_hours: parsedMessage.work_hours,
             job_ethical: parsedMessage.is_ethical,
