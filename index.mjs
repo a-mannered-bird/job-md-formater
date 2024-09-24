@@ -67,6 +67,31 @@ const readAndFilterMarkdownFile = async (file) => {
     return {originalContents, filteredContents}
 }
 
+const writeOutputFile = async (title, contents, newProperties) => {
+    const newMarkdownProperties = {
+        job_employer: newProperties.employer,
+        job_role: newProperties.role,
+        job_region: ['Solar System', 'The Moon'], // TODO: Hardcoded value because I'm looking in specific spaces
+        job_experience: newProperties.experience,
+        job_skills: newProperties.skills.map(skill => skill.toLowerCase()),
+        job_type: 'CDI',
+        job_hours: newProperties.work_hours,
+        job_ethical: newProperties.is_ethical,
+        job_flexibility: newProperties.is_flexible,
+        job_attractive: newProperties.is_attractive,
+    }
+    const convertedFile = matter(contents)
+    const outputContents = matter.stringify(convertedFile.content, {
+        ...convertedFile.data,
+        ...newMarkdownProperties,
+    })
+
+    // Create the duplicate markdown file in the output folder
+    const outputFilePath = path.join(outputPath, title)
+    fs.writeFileSync(outputFilePath, outputContents, 'utf-8')
+    console.log(`💾 Processed and saved: ${outputFilePath}`)
+}
+
 const processMarkdownFiles = async () => {
 
     // Ensure input folder exists
@@ -85,10 +110,9 @@ const processMarkdownFiles = async () => {
     if (!assistantId || !threadId) {
         await createAssistantAndStoreIds()
     }
-    
 
-    markdownFiles.forEach(async file => {
-        let {originalContents, filteredContents} = await readAndFilterMarkdownFile(file)
+    markdownFiles.forEach(async fileTitle => {
+        let {originalContents, filteredContents} = await readAndFilterMarkdownFile(fileTitle)
         
         console.log(`🤖 Submitting file contents to your chat GPT assistant...`)
         const latestMessage = await postMessageAndGetResponse(assistantId, threadId, filteredContents)
@@ -96,28 +120,7 @@ const processMarkdownFiles = async () => {
         const parsedMessage = JSON.parse(messageValue)
         console.log(`📄 The results just came in!`, parsedMessage)
 
-        const newMarkdownProperties = {
-            job_employer: parsedMessage.employer,
-            job_role: parsedMessage.role,
-            job_region: ['Solar System', 'The Moon'], // TODO: Hardcoded value because I'm looking in specific spaces
-            job_experience: parsedMessage.experience,
-            job_skills: parsedMessage.skills.map(skill => skill.toLowerCase()),
-            job_type: 'CDI',
-            job_hours: parsedMessage.work_hours,
-            job_ethical: parsedMessage.is_ethical,
-            job_flexibility: parsedMessage.is_flexible,
-            job_attractive: parsedMessage.is_attractive,
-        }
-        const convertedFile = matter(originalContents)
-        const outputContents = matter.stringify(convertedFile.content, {
-            ...convertedFile.data,
-            ...newMarkdownProperties,
-        })
-
-        // Create the duplicate markdown file in the output folder
-        const outputFilePath = path.join(outputPath, file)
-        fs.writeFileSync(outputFilePath, outputContents, 'utf-8')
-        console.log(`💾 Processed and saved: ${outputFilePath}`)
+        await writeOutputFile(fileTitle, originalContents, parsedMessage)
     })
 }
 
