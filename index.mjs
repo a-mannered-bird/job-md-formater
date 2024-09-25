@@ -24,6 +24,10 @@ const outputPath = process.env.OUTPUT_PATH || './output-files'
 let assistantId = process.env.ASSISTANT_ID
 let threadId = process.env.THREAD_ID
 
+/**
+ * Will create a chatGPT assistant on your account and write
+ * the assistant and thread ID in your .env file
+ */
 const createAssistantAndStoreIds = async () => {
     console.log(`⏳ Creating a new chat GPT assistant and a new thread...`)
     const response = await createAssistant({
@@ -45,6 +49,10 @@ const createAssistantAndStoreIds = async () => {
     updateEnvFile('THREAD_ID', threadId)
 }
 
+/**
+ * Will read a markdown file contents, and clean the data that is not useful
+ * for the chatGPT analysis
+ */
 const readAndFilterMarkdownFile = async (file) => {
     console.log(`⏳  Reading "${file}"...`)
     const filePath = path.join(inputPath, file)
@@ -67,6 +75,9 @@ const readAndFilterMarkdownFile = async (file) => {
     return {originalContents, filteredContents}
 }
 
+/**
+ * Use response from chatGPT to write a new file as output
+ */
 const writeOutputFile = async (title, contents, newProperties) => {
     const newMarkdownProperties = {
         job_employer: newProperties.employer,
@@ -92,6 +103,9 @@ const writeOutputFile = async (title, contents, newProperties) => {
     console.log(`💾 Processed and saved: ${outputFilePath}`)
 }
 
+/**
+ * Run the script for every markdown file in the input folder.
+ */
 const processMarkdownFiles = async () => {
 
     // Ensure input folder exists
