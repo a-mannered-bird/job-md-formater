@@ -1,3 +1,3 @@
 export const skillMapping = {
-	"javascript": ['java script']
+	"javascript": ['java script'],
 }

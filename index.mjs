@@ -83,10 +83,10 @@ const readAndFilterMarkdownFile = async (file) => {
  * Remove duplicates
  */
 const mapSkills = (skills) => {
-    const newSkills = newProperties.skills.map(skill => {
+    const newSkills = skills.map(skill => {
         let newSkill = skill.toLowerCase()
-        for (const [trueSkill, synonyms] of skillMapping) {
-            if (synonyms.includes(newSkill)) {
+        for (const trueSkill in skillMapping) {
+            if (skillMapping[trueSkill].includes(newSkill)) {
                 console.log(`🧼 Changed skill '${newSkill}' to '${trueSkill}`)
                 newSkill = trueSkill
                 break
@@ -155,7 +155,27 @@ const processMarkdownFiles = async () => {
         const latestMessage = await postMessageAndGetResponse(assistantId, threadId, filteredContents)
         const messageValue = latestMessage.content[0].text.value
         const parsedMessage = JSON.parse(messageValue)
-        parsedMessage.skills.push('java script')
+        // const parsedMessage = {
+        //   employer: 'Bluesquare',
+        //   role: 'Full-Stack Developer',
+        //   experience: 5,
+        //   skills: [
+        //     'JavaScript',            'TypeScript',
+        //     'HTML',                  'CSS',
+        //     'React',                 'Python',
+        //     'Google Cloud Platform', 'SQL',
+        //     'PostgreSQL',            'API design',
+        //     'English',               'French',
+        //     'TerraForm',             'UI/UX design',
+        //     'Apache Superset',       'Strapi',
+        //     'Data Engineering',      'GraphQL',
+        //     'java script'
+        //   ],
+        //   work_hours: 40,
+        //   is_ethical: true,
+        //   is_flexible: true,
+        //   is_attractive: true
+        // }
         console.log(`📄 The results just came in!`, parsedMessage)
 
         await writeOutputFile(fileTitle, originalContents, parsedMessage)
