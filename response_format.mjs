@@ -10,7 +10,8 @@ export const response_format = {
       },
       "role": {
         "type": "string",
-        "description": "The name of the role expected to be played by the new recruit."
+        "description": "The name of the role expected to be played by the new recruit.",
+        "enum": ["Front-End Developer", "Back-End Developer", "Full-Stack Developer", "DevOps Engineer", "Mobile Developer", "Security Engineer", "Other"]
       },
       "experience": {
         "type": "integer",
