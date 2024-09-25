@@ -33,6 +33,6 @@ export const postMessageAndGetResponse = async (assistant_id, thread_id, content
     )
     return messages.data[0]
   } else {
-    console.log(run.status)
+    console.log(`The chat GPT run has failed with status ${run.status}`)
   }
 }

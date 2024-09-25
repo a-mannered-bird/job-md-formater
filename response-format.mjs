@@ -1,4 +1,4 @@
-export const response_format = {
+export const responseFormat = {
   "name": "job_ad_analysis",
   "strict": true,
   "schema": {

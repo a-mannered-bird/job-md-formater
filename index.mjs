@@ -14,9 +14,10 @@ import {
 import {
     createAssistant,
     postMessageAndGetResponse,
-} from './job-ad-analyzer.mjs'
+} from './chatpgt-utils.mjs'
 
-import {response_format} from './response_format.mjs'
+import {responseFormat} from './response-format.mjs'
+import {skillMapping} from './skills-mapping.mjs'
 
 dotenv.config() 
 const inputPath = process.env.INPUT_PATH || './input-files'
@@ -37,7 +38,7 @@ const createAssistantAndStoreIds = async () => {
         temperature: 0.2,
         response_format: {
             type: "json_schema",
-            json_schema: response_format,
+            json_schema: responseFormat,
         }
     })
     console.log(`🤖 Assistant and thread created!`)
@@ -76,6 +77,28 @@ const readAndFilterMarkdownFile = async (file) => {
 }
 
 /**
+ * Map skills to return them with correct lowercase name.
+ * This allow to avoid many synonyms by using as much possible the same name
+ * for skills.
+ * Remove duplicates
+ */
+const mapSkills = (skills) => {
+    const newSkills = newProperties.skills.map(skill => {
+        let newSkill = skill.toLowerCase()
+        for (const [trueSkill, synonyms] of skillMapping) {
+            if (synonyms.includes(newSkill)) {
+                console.log(`🧼 Changed skill '${newSkill}' to '${trueSkill}`)
+                newSkill = trueSkill
+                break
+            }
+        }
+        return newSkill
+    })
+    return [...new Set(newSkills)] // remove duplicates
+
+}
+
+/**
  * Use response from chatGPT to write a new file as output
  */
 const writeOutputFile = async (title, contents, newProperties) => {
@@ -84,7 +107,7 @@ const writeOutputFile = async (title, contents, newProperties) => {
         job_role: newProperties.role,
         job_region: ['Solar System', 'The Moon'], // TODO: Hardcoded value because I'm looking in specific spaces
         job_experience: newProperties.experience,
-        job_skills: newProperties.skills.map(skill => skill.toLowerCase()),
+        job_skills: mapSkills(newProperties.skills),
         job_type: 'CDI',
         job_hours: newProperties.work_hours,
         job_ethical: newProperties.is_ethical,
@@ -132,6 +155,7 @@ const processMarkdownFiles = async () => {
         const latestMessage = await postMessageAndGetResponse(assistantId, threadId, filteredContents)
         const messageValue = latestMessage.content[0].text.value
         const parsedMessage = JSON.parse(messageValue)
+        parsedMessage.skills.push('java script')
         console.log(`📄 The results just came in!`, parsedMessage)
 
         await writeOutputFile(fileTitle, originalContents, parsedMessage)
