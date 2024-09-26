@@ -148,7 +148,7 @@ const processMarkdownFiles = async () => {
         await createAssistantAndStoreIds()
     }
 
-    markdownFiles.forEach(async fileTitle => {
+    for (const fileTitle of markdownFiles) {
         let {originalContents, filteredContents} = await readAndFilterMarkdownFile(fileTitle)
         
         console.log(`🤖 Submitting file contents to your chat GPT assistant...`)
@@ -159,7 +159,7 @@ const processMarkdownFiles = async () => {
         console.log(`📄 The results just came in!`, parsedMessage)
 
         await writeOutputFile(fileTitle, originalContents, parsedMessage)
-    })
+    }
 }
 
 // Execute the script
