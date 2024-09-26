@@ -155,27 +155,7 @@ const processMarkdownFiles = async () => {
         const latestMessage = await postMessageAndGetResponse(assistantId, threadId, filteredContents)
         const messageValue = latestMessage.content[0].text.value
         const parsedMessage = JSON.parse(messageValue)
-        // const parsedMessage = {
-        //   employer: 'Bluesquare',
-        //   role: 'Full-Stack Developer',
-        //   experience: 5,
-        //   skills: [
-        //     'JavaScript',            'TypeScript',
-        //     'HTML',                  'CSS',
-        //     'React',                 'Python',
-        //     'Google Cloud Platform', 'SQL',
-        //     'PostgreSQL',            'API design',
-        //     'English',               'French',
-        //     'TerraForm',             'UI/UX design',
-        //     'Apache Superset',       'Strapi',
-        //     'Data Engineering',      'GraphQL',
-        //     'java script'
-        //   ],
-        //   work_hours: 40,
-        //   is_ethical: true,
-        //   is_flexible: true,
-        //   is_attractive: true
-        // }
+        // const parsedMessage = {employer: 'Bluesquare', role: 'Full-Stack Developer', experience: 5, skills: ['JavaScript',            'TypeScript', 'HTML',                  'CSS', 'React',                 'Python', 'Google Cloud Platform', 'SQL', 'PostgreSQL',            'API design', 'English',               'French', 'TerraForm',             'UI/UX design', 'Apache Superset',       'Strapi', 'Data Engineering',      'GraphQL', 'java script' ], work_hours: 40, is_ethical: true, is_flexible: true, is_attractive: true }
         console.log(`📄 The results just came in!`, parsedMessage)
 
         await writeOutputFile(fileTitle, originalContents, parsedMessage)
