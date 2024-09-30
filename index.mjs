@@ -125,7 +125,8 @@ const writeOutputFile = async (title, contents, newProperties) => {
     const newMarkdownProperties = {
         job_employer: newProperties.employer,
         job_role: newProperties.role,
-        job_region: ['Solar System', 'The Moon'], // TODO: Hardcoded value because I'm looking in specific spaces
+        job_description: newProperties.description,
+        job_region: ['Solar system', 'the moon'], // TODO: Hardcoded value because I'm looking in specific spaces
         job_experience: newProperties.experience,
         job_skills: mapSkills(newProperties.skills),
         job_type: 'CDI',
