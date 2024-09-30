@@ -10,7 +10,7 @@ export const responseFormat = {
       },
       "role": {
         "type": "string",
-        "description": "The name of the role expected to be played by the new recruit.",
+        "description": "The name of the role expected to be played by the new recruit. If it's not related to the web or the mobile domain, return the 'Other' value",
         "enum": ["Front-End Developer", "Back-End Developer", "Full-Stack Developer", "DevOps Engineer", "Mobile Developer", "Security Engineer", "Other"]
       },
       "experience": {
@@ -21,7 +21,7 @@ export const responseFormat = {
         "type": "array",
         "items": {
           "type": "string",
-          "description": "The skills expected of the new recruit. It could be soft skills, hard skills, natural languages (such as like English, French, Dutch, German, etc...), name of technologies, programming languages, code frameworks, code libraries, softwares, theoritical skills, expertise fields. Don't include technology version numbers in their names."
+          "description": "List as many skills expected of the new recruit as you can. It could be soft skills, hard skills, natural languages (such as like English, French, Dutch, German, etc...), name of technologies, programming languages, code frameworks, code libraries, softwares, theoritical skills, expertise fields. Don't include technology version numbers in their names."
         }
       },
       "work_hours": {
