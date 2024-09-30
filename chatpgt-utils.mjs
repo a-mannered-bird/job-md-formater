@@ -14,6 +14,19 @@ export const createAssistant = async (config) => {
   return {assistant, thread}
 }
 
+export const deleteAssistant = async (assistantId) => {
+  console.log(`🗑 Deleting assistant ${assistantId}`)
+  const response = await openai.beta.assistants.del(assistantId)
+  console.log(response)
+}
+
+export const deleteThread = async (threadId) => {
+  console.log(`🗑 Deleting thread ${threadId}`)
+  const response = await openai.beta.threads.del(threadId);
+  console.log(response)
+}
+
+
 export const postMessageAndGetResponse = async (assistant_id, thread_id, content) => {
   
   // Post the user message to the thread

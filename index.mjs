@@ -13,6 +13,8 @@ import {
 
 import {
     createAssistant,
+    deleteAssistant,
+    deleteThread,
     postMessageAndGetResponse,
 } from './chatpgt-utils.mjs'
 
@@ -48,6 +50,24 @@ const createAssistantAndStoreIds = async () => {
 
     updateEnvFile('ASSISTANT_ID', assistantId)
     updateEnvFile('THREAD_ID', threadId)
+}
+
+/**
+ * Use .env variables to delete ancient thread and assistant and rebuild one
+ * It will store the new variables in the .env file.
+ */
+export const resetAssistant = async () => {
+    // If the assistant doesn't exist yet, create and update the IDs.
+    if (!assistantId || !threadId) {
+        console.log(`❌ The assistant or thread ids that you are trying to delete are missing from the env...`)
+        await createAssistantAndStoreIds()
+        return
+    }
+    console.log(`⏳ Resetting assistant!`)
+    await deleteThread(threadId)
+    await deleteAssistant(assistantId)
+    await createAssistantAndStoreIds()
+    console.log(`✅ Reset completed!`)
 }
 
 /**
@@ -129,7 +149,7 @@ const writeOutputFile = async (title, contents, newProperties) => {
 /**
  * Run the script for every markdown file in the input folder.
  */
-const processMarkdownFiles = async () => {
+export const processMarkdownFiles = async () => {
 
     // Ensure input folder exists
     if (!process.env.INPUT_PATH) {
@@ -137,7 +157,7 @@ const processMarkdownFiles = async () => {
     }
 
     // Collect markdown files
-    const markdownFiles = collectMarkdownFiles(inputPath)
+    const markdownFiles = [collectMarkdownFiles(inputPath)[0]]
     if (markdownFiles.length === 0) return
 
     // Ensure output folder exists
@@ -161,6 +181,3 @@ const processMarkdownFiles = async () => {
         await writeOutputFile(fileTitle, originalContents, parsedMessage)
     }
 }
-
-// Execute the script
-processMarkdownFiles()

@@ -70,5 +70,5 @@ export const updateEnvFile = (key, value, envFilePath = '.env') => {
 
     // Write the updated content back to the .env file
     fs.writeFileSync(filePath, newLines.join('\n'), 'utf-8')
-    console.log(`✏️  Updated .env file: ${key}=${value}`)
+    console.log(`💾 Updated .env file: ${key}=${value}`)
 }
