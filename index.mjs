@@ -176,7 +176,7 @@ export const processMarkdownFiles = async () => {
         const latestMessage = await postMessageAndGetResponse(assistantId, threadId, filteredContents)
         const messageValue = latestMessage.content[0].text.value
         const parsedMessage = JSON.parse(messageValue)
-        // const parsedMessage = {employer: 'Bluesquare', role: 'Full-Stack Developer', experience: 5, skills: ['JavaScript',            'TypeScript', 'HTML',                  'CSS', 'React',                 'Python', 'Google Cloud Platform', 'SQL', 'PostgreSQL',            'API design', 'English',               'French', 'TerraForm',             'UI/UX design', 'Apache Superset',       'Strapi', 'Data Engineering',      'GraphQL', 'java script' ], work_hours: 40, is_ethical: true, is_flexible: true, is_attractive: true }
+        // const parsedMessage = {employer: 'Mutualité Chrétienne', role: 'Other', description: 'Mutualité Chrétienne is seeking an AI Architect to enhance the well-being and health of over 4.5 million members through innovative data analytics and business intelligence solutions.', experience: 5, skills: ['data science', 'team management', 'project management', 'change management', 'ICT architecture frameworks', 'data architecture', 'Dutch', 'French' ], work_hours: 40, is_ethical: true, is_flexible: true, is_attractive: true }
         console.log(`📄 The results just came in!`, parsedMessage)
 
         await writeOutputFile(fileTitle, originalContents, parsedMessage)
