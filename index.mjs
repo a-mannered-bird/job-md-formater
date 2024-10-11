@@ -26,6 +26,9 @@ const inputPath = process.env.INPUT_PATH || './input-files'
 const outputPath = process.env.OUTPUT_PATH || './output-files'
 let assistantId = process.env.ASSISTANT_ID
 let threadId = process.env.THREAD_ID
+let total_prompt_tokens = 0
+let total_completion_tokens = 0
+let total_total_tokens = 0
 
 /**
  * Will create a chatGPT assistant on your account and write
@@ -159,7 +162,8 @@ export const processMarkdownFiles = async () => {
     }
 
     // Collect markdown files
-    const markdownFiles = [collectMarkdownFiles(inputPath)[0]]
+    const markdownFiles = collectMarkdownFiles(inputPath)
+    // const markdownFiles = [collectMarkdownFiles(inputPath)[0]]
     if (markdownFiles.length === 0) return
 
     // Ensure output folder exists
@@ -174,12 +178,23 @@ export const processMarkdownFiles = async () => {
         let {originalContents, filteredContents} = await readAndFilterMarkdownFile(fileTitle)
         
         console.log(`🤖 Submitting file contents to your chat GPT assistant...`)
-        const latestMessage = await postMessageAndGetResponse(assistantId, threadId, filteredContents)
+        const {latestMessage, run} = await postMessageAndGetResponse(assistantId, threadId, filteredContents)
+        // const run = {id: 'run_YNXGSmWFykl1QfK1GNjFGGMf', object: 'thread.run', created_at: 1728687963, assistant_id: 'asst_Ym6UazfMHz0zhF3LHRmnaYdJ', thread_id: 'thread_NzXSnm8CJzaAGMdPCb3xGst5', status: 'completed', started_at: 1728687964, expires_at: null, cancelled_at: null, failed_at: null, completed_at: 1728687966, required_action: null, last_error: null, model: 'gpt-4o-mini', instructions: 'You are an assistant specialized in extracting data from job ads submitted to you. The user will send you job ads fully redacted in markdown format, you will analyze them and extract the informations detailed in the JSON response format attached. Whatever the language of the job ad, you should always answer in english.', tools: [], tool_resources: {}, metadata: {}, temperature: 0.2, top_p: 1, max_completion_tokens: null, max_prompt_tokens: null, truncation_strategy: { type: 'auto', last_messages: null }, incomplete_details: null, usage: { prompt_tokens: 4206, completion_tokens: 106, total_tokens: 4312 }, response_format: {type: 'json_schema', json_schema: {name: 'job_ad_analysis', description: null, schema: {}, strict: true } }, tool_choice: 'auto', parallel_tool_calls: true }
+        const {prompt_tokens, completion_tokens, total_tokens} = run.usage
         const messageValue = latestMessage.content[0].text.value
         const parsedMessage = JSON.parse(messageValue)
         // const parsedMessage = {employer: 'Mutualité Chrétienne', role: 'Other', description: 'Mutualité Chrétienne is seeking an AI Architect to enhance the well-being and health of over 4.5 million members through innovative data analytics and business intelligence solutions.', experience: 5, skills: ['data science', 'team management', 'project management', 'change management', 'ICT architecture frameworks', 'data architecture', 'Dutch', 'French' ], work_hours: 40, is_ethical: true, is_flexible: true, is_attractive: true }
         console.log(`📄 The results just came in!`, parsedMessage)
+        console.log(`💸 Tokens consumed for this run - ${prompt_tokens} Prompt - ${completion_tokens} Completion - ${total_tokens} Total`)
+        total_prompt_tokens += prompt_tokens
+        total_completion_tokens += completion_tokens
+        total_total_tokens += total_tokens
 
         await writeOutputFile(fileTitle, originalContents, parsedMessage)
+        console.log(`---`)
+    }
+
+    if (markdownFiles.length > 1) {
+        console.log(`💸 Tokens consumed in total - ${total_prompt_tokens} Prompt - ${total_completion_tokens} Completion - ${total_total_tokens} Total`)
     }
 }

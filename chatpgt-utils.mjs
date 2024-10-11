@@ -44,7 +44,7 @@ export const postMessageAndGetResponse = async (assistant_id, thread_id, content
     const messages = await openai.beta.threads.messages.list(
       thread_id
     )
-    return messages.data[0]
+    return {latestMessage: messages.data[0], run}
   } else {
     console.log(`The chat GPT run has failed with status ${run.status}`)
   }
