@@ -136,6 +136,7 @@ const writeOutputFile = async (title, contents, newProperties) => {
         job_attractive: newProperties.is_attractive,
     }
     const convertedFile = matter(contents)
+    convertedFile.data.tags.push('job-ad-analyzed')
     const outputContents = matter.stringify(convertedFile.content, {
         ...convertedFile.data,
         ...newMarkdownProperties,
