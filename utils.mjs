@@ -57,11 +57,12 @@ export const updateEnvFile = (key, value, envFilePath = '.env') => {
         // Check if the current line contains the key we want to update
         if (currentKey === key) {
             keyFound = true
+            if (!value) return `` // If value is empty, empty the line
             return `${key}=${value}` // Update the key with the new value
         }
 
         return line
-    })
+    }).filter((line) => !!line)
 
     // If the key was not found, add it to the end of the file
     if (!keyFound) {
@@ -70,5 +71,8 @@ export const updateEnvFile = (key, value, envFilePath = '.env') => {
 
     // Write the updated content back to the .env file
     fs.writeFileSync(filePath, newLines.join('\n'), 'utf-8')
+    if (!value) {
+        return console.log(`🗑 Deleted line ${key} from .env file:`)
+    }
     console.log(`💾 Updated .env file: ${key}=${value}`)
 }

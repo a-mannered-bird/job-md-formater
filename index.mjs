@@ -61,14 +61,23 @@ const createAssistantAndStoreIds = async () => {
  */
 export const resetAssistant = async () => {
     // If the assistant doesn't exist yet, create and update the IDs.
-    if (!assistantId || !threadId) {
-        console.log(`❌ The assistant or thread ids that you are trying to delete are missing from the env...`)
+    if (!assistantId && !threadId) {
+        console.log(`❌ The assistant and thread ids that you are trying to delete are missing from the env...`)
         await createAssistantAndStoreIds()
         return
     }
     console.log(`⏳ Resetting assistant!`)
-    await deleteThread(threadId)
-    await deleteAssistant(assistantId)
+    
+    if (threadId) {
+        await deleteThread(threadId)
+        updateEnvFile('THREAD_ID', '')
+    }
+
+    if (assistantId) {
+        await deleteAssistant(assistantId)
+        updateEnvFile('ASSISTANT_ID', '')
+    }
+    
     await createAssistantAndStoreIds()
     console.log(`✅ Reset completed!`)
 }
