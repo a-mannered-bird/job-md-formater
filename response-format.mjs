@@ -36,14 +36,10 @@ export const responseFormat = {
         "type": "boolean",
         "description": "Only return true if the job is involved in areas such as sustainable development, the circular economy, medical innovation, healthy eating, solidarity and gender equality."
       },
-      "is_flexible": {
+      "is_remote": {
         "type": "boolean",
-        "description": "Only return true if the job conditions include working from home, having reduced hours, or more than 30 days of holidays."
-      },
-      "is_attractive": {
-        "type": "boolean",
-        "description": "Only return true if the job is attractive for my personal tastes. I like anything that has to do with music, video games, ecology. I don't like the following: Finance, banking institutions (unless explicitely ethical), consulting companies, audit companies."
-      } 
+        "description": "Only return true if the job conditions include partially or totally working remotely."
+      }
     },
     "additionalProperties": false,
     "required": [
@@ -54,8 +50,7 @@ export const responseFormat = {
       "skills",
       "work_hours",
       "is_ethical",
-      "is_flexible",
-      "is_attractive"
+      "is_remote"
     ]
   }
 }

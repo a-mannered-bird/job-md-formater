@@ -135,8 +135,7 @@ const writeOutputFile = async (title, contents, newProperties) => {
         job_type: 'CDI',
         job_hours: newProperties.work_hours,
         job_ethical: newProperties.is_ethical,
-        job_flexibility: newProperties.is_flexible,
-        job_attractive: newProperties.is_attractive,
+        job_remote: newProperties.is_remote,
     }
     const convertedFile = matter(contents)
     convertedFile.data.tags.push('job-ad-analyzed')
@@ -183,7 +182,7 @@ export const processMarkdownFiles = async () => {
         const {prompt_tokens, completion_tokens, total_tokens} = run.usage
         const messageValue = latestMessage.content[0].text.value
         const parsedMessage = JSON.parse(messageValue)
-        // const parsedMessage = {employer: 'Mutualité Chrétienne', role: 'Other', description: 'Mutualité Chrétienne is seeking an AI Architect to enhance the well-being and health of over 4.5 million members through innovative data analytics and business intelligence solutions.', experience: 5, skills: ['data science', 'team management', 'project management', 'change management', 'ICT architecture frameworks', 'data architecture', 'Dutch', 'French' ], work_hours: 40, is_ethical: true, is_flexible: true, is_attractive: true }
+        // const parsedMessage = {employer: 'Mutualité Chrétienne', role: 'Other', description: 'Mutualité Chrétienne is seeking an AI Architect to enhance the well-being and health of over 4.5 million members through innovative data analytics and business intelligence solutions.', experience: 5, skills: ['data science', 'team management', 'project management', 'change management', 'ICT architecture frameworks', 'data architecture', 'Dutch', 'French' ], work_hours: 40, is_ethical: true, is_remote: true }
         console.log(`📄 The results just came in!`, parsedMessage)
         console.log(`💸 Tokens consumed for this run - ${prompt_tokens} Prompt - ${completion_tokens} Completion - ${total_tokens} Total`)
         total_prompt_tokens += prompt_tokens
