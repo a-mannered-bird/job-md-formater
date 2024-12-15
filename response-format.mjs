@@ -32,6 +32,11 @@ export const responseFormat = {
         "type": "integer",
         "description": "The number of work hours that the new recruit is expected to do. By default, it's 40 hours."
       },
+      "contract_type": {
+        "type": "string",
+        "description": "Defines the specific type of employment or engagement arrangement between an employee and the employer.",
+        "enum": ["Permanent contract", "Internship", "Temporary contract", "Freelance Contract"]
+      },
       "is_ethical": {
         "type": "boolean",
         "description": "Only return true if the job is involved in areas such as sustainable development, the circular economy, medical innovation, healthy eating, solidarity and gender equality."
@@ -49,6 +54,7 @@ export const responseFormat = {
       "experience",
       "skills",
       "work_hours",
+      "contract_type",
       "is_ethical",
       "is_remote"
     ]

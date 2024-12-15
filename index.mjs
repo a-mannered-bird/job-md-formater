@@ -141,7 +141,7 @@ const writeOutputFile = async (title, contents, newProperties) => {
         job_region: ['Solar system', 'the moon'], // TODO: Hardcoded value because I'm looking in specific spaces
         job_experience: newProperties.experience,
         job_skills: mapSkills(newProperties.skills),
-        job_type: 'CDI',
+        job_type: newProperties.contract_type,
         job_hours: newProperties.work_hours,
         job_ethical: newProperties.is_ethical,
         job_remote: newProperties.is_remote,
