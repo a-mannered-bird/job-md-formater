@@ -25,7 +25,7 @@ export const responseFormat = {
         "type": "array",
         "items": {
           "type": "string",
-          "description": "List as many skills expected of the new recruit as you can. It could be soft skills, hard skills, natural languages (such as like English, French, Dutch, German, etc...), name of technologies, programming languages, code frameworks, code libraries, softwares, theoritical skills, expertise fields. Don't include technology version numbers in their names."
+          "description": "List as many skills expected of the new recruit as you can. It could be soft skills, hard skills, natural languages (such as like English, French, Dutch, German, etc...), name of technologies, programming languages, code frameworks, code libraries, softwares, theoritical skills, expertise fields. Don't include technology version numbers in their names. Split each tool mentionned in brackets as a new value in the response Array."
         }
       },
       "work_hours": {
