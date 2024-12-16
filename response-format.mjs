@@ -10,7 +10,7 @@ export const responseFormat = {
       },
       "role": {
         "type": "string",
-        "description": "The name of the role expected to be played by the new recruit. If it's not related to the web or the mobile domain, return the 'Other' value",
+        "description": "The name of the role expected to be played by the new recruit. If it's related to Cloud Engineering or Infrastructure, return \"DevOps Engineer\" If it's not related to the web or the mobile domain, return the 'Other' value.",
         "enum": ["Front-End Developer", "Back-End Developer", "Full-Stack Developer", "DevOps Engineer", "Mobile Developer", "Security Engineer", "Other"]
       },
       "description": {
@@ -19,7 +19,7 @@ export const responseFormat = {
       },
       "experience": {
         "type": "integer",
-        "description": "The number of years of previous experience expected of the new recruit."
+        "description": "The number of years of previous experience expected of the new recruit. If not specified, set the value to 0."
       },
       "skills": {
         "type": "array",
