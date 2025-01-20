@@ -3,6 +3,7 @@
 input-files/
 output-files/
 notes.md
+.vscode
 
 # Logs
 logs
