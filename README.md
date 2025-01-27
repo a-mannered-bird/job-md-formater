@@ -68,3 +68,9 @@ There are several reasons to rebuild the assistant:
 It might be a good idea to reset the Assistant from time to time, even if you don't change the parameters. Creating a new thread this way may yield better results.
 
 To rebuild the Assistant, simply run `npm run reset`. This will delete the previous assistant and thread, then create new ones.  
+
+## Other instructions
+
+### Trim skills
+
+TODO

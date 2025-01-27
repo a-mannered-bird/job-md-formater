@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "reset": "node reset.mjs",
-    "start": "node start.mjs"
+    "start": "node start.mjs",
+    "trim": "node trim.mjs"
   },
   "author": "",
   "license": "ISC",
