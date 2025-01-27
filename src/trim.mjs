@@ -2,7 +2,7 @@ import matter from 'gray-matter'
 import * as path from 'path'
 import * as fs from 'fs'
 
-import { getInputFiles, readAndFilterMarkdownFile, mapSkills, outputPath } from './index.mjs'
+import { getInputFiles, readAndFilterMarkdownFile, mapSkills, outputPath } from '../index.mjs'
 
 export const processMarkdownFiles = async () => {
   const markdownFiles = await getInputFiles()

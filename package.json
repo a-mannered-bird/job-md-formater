@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "reset": "node reset.mjs",
-    "start": "node start.mjs",
-    "trim": "node trim.mjs"
+    "reset": "node src/reset.mjs",
+    "start": "node src/start.mjs",
+    "trim": "node src/trim.mjs"
   },
   "author": "",
   "license": "ISC",

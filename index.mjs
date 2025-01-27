@@ -9,17 +9,17 @@ import {
     updateEnvFile,
     removeMarkdownLinksAndImages,
     removeYAMLFrontMatter,
-} from './utils.mjs'
+} from './src/utils/utils.mjs'
 
 import {
     createAssistant,
     deleteAssistant,
     deleteThread,
     postMessageAndGetResponse,
-} from './chatpgt-utils.mjs'
+} from './src/utils/chatpgt-utils.mjs'
 
-import { responseFormat } from './response-format.mjs'
-import { skillMapping } from './skills-mapping.mjs'
+import { responseFormat } from './src/prompting/response-format.mjs'
+import { skillMapping } from './src/utils/skills-mapping.mjs'
 
 dotenv.config()
 export const inputPath = process.env.INPUT_PATH || './input-files'
