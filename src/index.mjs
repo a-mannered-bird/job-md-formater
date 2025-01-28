@@ -9,17 +9,17 @@ import {
     updateEnvFile,
     removeMarkdownLinksAndImages,
     removeYAMLFrontMatter,
-} from './src/utils/utils.mjs'
+} from './utils/utils.mjs'
 
 import {
     createAssistant,
     deleteAssistant,
     deleteThread,
     postMessageAndGetResponse,
-} from './src/utils/chatpgt-utils.mjs'
+} from './utils/chatpgt-utils.mjs'
 
-import { responseFormat } from './src/prompting/response-format.mjs'
-import { skillMapping } from './src/utils/skills-mapping.mjs'
+import { responseFormat } from './prompting/response-format.mjs'
+import { skillMapping } from './utils/skills-mapping.mjs'
 
 dotenv.config()
 export const inputPath = process.env.INPUT_PATH || './input-files'
@@ -139,7 +139,7 @@ const writeOutputFile = async (title, contents, newProperties) => {
         job_employer: newProperties.employer,
         job_role: newProperties.role,
         job_description: newProperties.description,
-        job_region: ['Solar system', 'the moon'], // TODO: Hardcoded value because I'm looking in specific spaces
+        job_region: ['Belgium', 'Brussels'], // I'm putting here hardcoded value because I look only in specific cities, so I don't need an AI to tell me that
         job_experience: newProperties.experience,
         job_skills: mapSkills(newProperties.skills),
         job_type: newProperties.contract_type,
