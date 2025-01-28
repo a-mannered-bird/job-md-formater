@@ -18,7 +18,7 @@ import {
     postMessageAndGetResponse,
 } from './utils/chatpgt-utils.mjs'
 
-import { responseFormat } from './prompting/response-format.mjs'
+import { responseFormat } from './prompting/job_ad_analysis_response.mjs'
 import { skillMapping } from './utils/skills-mapping.mjs'
 
 dotenv.config()
@@ -161,7 +161,7 @@ const writeOutputFile = async (title, contents, newProperties) => {
 }
 
 /**
- * 
+ * Get all markdown files in the input folder.
  */
 export const getInputFiles = async () => {
     // Ensure input folder exists

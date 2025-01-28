@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "reset": "node src/reset.mjs",
     "start": "node src/start.mjs",
-    "trim": "node src/trim.mjs"
+    "trim": "node src/trim.mjs",
+    "find-duplicate-skills" : "node src/find-duplicate-skills.mjs"
   },
   "author": "",
   "license": "ISC",
