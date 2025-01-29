@@ -16,12 +16,13 @@ const findDuplicateSkills = async (trueNames, skills) => {
     const response = await createAssistant({
         name: "Find duplicate skills",
         instructions: `
-You will receive 2 arrays of strings, named \`trueNames\` and \`skills\`. \`skills\` is a list of skills that have been collected from many job ads. Your job is to filter this list from duplicate skills by following this process:
-1. First analyse which skills from the \`skills\` array mean exactly the same thing and group them together. Don't group tools with their sub-tools (for example, "aws" and "aws ec2" should not be grouped together).
-2. Then for each group of duplicated skills, you will have to pick a "True Name" for these skills.
+You will receive 2 arrays of strings, named \`trueNames\` and \`skills\`. \`skills\` is a list of skills that have been collected from many job ads. Your job is to group together duplicate skills by following this process:
+1. First analyse which skills from the \`skills\` array mean exactly the same thing and group them together. Don't group tool skills with their sub-tools (for example, "aws" and "aws ec2" should not be grouped together).
+2. Discard group of skills that are only made of one skill.
+3. Then for each group of duplicated skills that has at least 2 skills, you will have to pick a "True Name" for these skills.
   a. If one of the duplicated skills is already contained inside the \`trueNames\` array, use it as the "True Name".
   b. Otherwise, the "True name" can be any one of the duplicated skills in the group, or you can generate it yourself. Whatever you think is more accurate.
-3. Finally, send the results of your work in the response format specified.
+4. Finally, send the results of your work in the response format specified.
         `,
         model: "gpt-4o-mini",
         temperature: 0.2,
@@ -47,9 +48,25 @@ const skills = ${JSON.stringify(skills)}
     console.log(`📄 The results just came in!`, parsedMessage)
     console.log(`💸 Tokens consumed for this run - ${prompt_tokens} Prompt - ${completion_tokens} Completion - ${total_tokens} Total`)
 
+
     // Delete the assistant
     await deleteAssistant(response.assistant.id)
     await deleteThread(response.thread.id)
+
+    return parsedMessage.skills
+}
+
+const cleanSkillMapping = (skills) => {
+  const processedSkills = {}
+
+  for (const [key, values] of Object.entries(skills)) {
+    const filteredValues = values.filter(value => value !== key)
+    if (filteredValues.length > 0) {
+      processedSkills[key] = filteredValues
+    }
+  }
+
+  return processedSkills
 }
 
 /**
@@ -91,4 +108,7 @@ export const collectUnmappedSkills = async (alreadyMapped, trueNames) => {
 const { trueNames, skillsMapped } = extractSkills()
 const unmappedSkills = await collectUnmappedSkills(skillsMapped)
 unmappedSkills.sort()
-await findDuplicateSkills(trueNames, unmappedSkills)
+// const skills = await findDuplicateSkills(trueNames, unmappedSkills)
+const skills = { 'agile methodologies': [ 'agile methodologies' ], 'api design': [ 'api design', 'api integrations', 'api rest' ], azure: [ 'azure', 'azure automation', 'azure cli', 'azure landing zones', 'microsoft azure', 'microsoft azure certifications' ], cloud: [ 'cloud', 'cloud deployment', 'cloud solutions design' ], 'data manipulation': [ 'data manipulation', 'data management' ], documentation: [ 'documentation', 'design documentation' ], 'front-end development': [ 'front-end development', 'front-end application analysis' ], 'google cloud': [ 'google cloud', 'google professional cloud devops engineer' ], 'infrastructure as code': [ 'infrastructure as code', 'terraform' ], javascript: [ 'javascript', 'js' ], 'non-relational databases': [ 'non-relational databases', 'mongodb', 'couchbase' ], 'requirements analysis': [ 'requirements analysis', 'functional requirements' ], security: [ 'security', 'firewalls' ], 'stakeholder management': [ 'stakeholder management', 'client-oriented', 'customer-oriented' ], tailwind: [ 'tailwind', 'tailwind css' ], 'team management': [ 'team management', 'teamwork' ] }
+const processedSkills = cleanSkillMapping(skills)
+console.log(processedSkills)
