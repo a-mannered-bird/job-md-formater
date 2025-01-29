@@ -8,7 +8,6 @@ export const skillMapping = {
 	"documentation": ['technical documentation'],
 	"front-end development": ['frontend development'],
 	"google cloud": ['google cloud platform'],
-	"google cloud": ['google cloud platform'],
 	"infrastructure as code": ['infrastructure-as-code'],
 	"javascript": ['java script'],
 	"non-relational databases": ['no-sql databases'],

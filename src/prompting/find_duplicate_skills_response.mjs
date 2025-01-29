@@ -11,12 +11,12 @@ export const responseFormat = {
           "items": {
             "type": "string"
           },
-          "description": "List of duplicate skill names grouped under the True Name."
+          "description": "List of \"Duplicate\" skill names grouped under the \"Best Name.\""
         },
-        "description": "An object where each key is the True Name of a skill, and the value is a list of duplicate names for that skill."
+        "description": "An object where each key is the \"Best Name\" of a skill, and the value is a list of duplicate names for that skill, or \"Duplicates Array\"."
       }
     },
     "required": ["skills"],
-    "description": "Structured output that groups duplicate skills under a True Name."
+    "description": "Structured output that groups duplicate skills under a \"Best Name.\""
   }
 }

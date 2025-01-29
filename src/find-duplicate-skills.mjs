@@ -10,22 +10,20 @@ import { skillMapping } from './utils/skills-mapping.mjs'
 /**
  * 
  */
-const findDuplicateSkills = async (trueNames, skills) => {
+const findDuplicateSkills = async (existingkeys, skills) => {
     // Create the assistant
     console.log(`⏳ Creating a new chat GPT assistant and a new thread...`)
     const response = await createAssistant({
         name: "Find duplicate skills",
         instructions: `
-You will receive 2 arrays of strings, named \`trueNames\` and \`skills\`. \`skills\` is a list of skills that have been collected from many job ads. Your job is to group together duplicate skills by following this process:
-1. First analyse which skills from the \`skills\` array mean exactly the same thing and group them together. Don't group tool skills with their sub-tools (for example, "aws" and "aws ec2" should not be grouped together).
-2. Discard group of skills that are only made of one skill.
-3. Then for each group of duplicated skills that has at least 2 skills, you will have to pick a "True Name" for these skills.
-  a. If one of the duplicated skills is already contained inside the \`trueNames\` array, use it as the "True Name".
-  b. Otherwise, the "True name" can be any one of the duplicated skills in the group, or you can generate it yourself. Whatever you think is more accurate.
+You will receive an javascript array of strings as input. It is a list of skills that have been collected from many job ads. Your job is to group together duplicate skills by following this process:
+1. First analyse which skills from the \`skills\` input array mean exactly the same thing and put them in an array. These arrays will be called "Duplicates Arrays", and each skill inside will be a called a "Duplicate".
+2. Discard "Duplicates Arrays" that have a \`length\` inferior to 2.
+3. For each "Duplicates Array" that has a \`length\` of 2 and more, you will have to pick one of the "Duplicate" as the "Best Name" for the skill it represents.
 4. Finally, send the results of your work in the response format specified.
         `,
         model: "gpt-4o-mini",
-        temperature: 0.2,
+        temperature: 0.01,
         response_format: {
             type: "json_schema",
             json_schema: responseFormat,
@@ -34,10 +32,7 @@ You will receive 2 arrays of strings, named \`trueNames\` and \`skills\`. \`skil
     console.log(`🤖 Assistant and thread created!`)
     
     // Send message
-    const message = `\`\`\`js
-const trueNames = ${JSON.stringify(trueNames)}
-const skills = ${JSON.stringify(skills)}
-\`\`\``
+    const message = `const skills = ${JSON.stringify(skills)}`
     console.log(`⏳ Sending the list of skills...`)
     const { latestMessage, run } = await postMessageAndGetResponse(response.assistant.id, response.thread.id, message)
 
@@ -74,18 +69,18 @@ const cleanSkillMapping = (skills) => {
  * @returns 
  */
 const extractSkills = () => {
-  const trueNames = Object.keys(skillMapping)
+  const existingkeys = Object.keys(skillMapping)
   const skillsMapped = [].concat(...Object.values(skillMapping))
-  return { trueNames, skillsMapped }
+  return { existingkeys, skillsMapped }
 }
 
 /**
  * 
  * @param {*} alreadyMapped 
- * @param {*} trueNames 
+ * @param {*} existingkeys 
  * @returns 
  */
-export const collectUnmappedSkills = async (alreadyMapped, trueNames) => {
+export const collectUnmappedSkills = async (alreadyMapped, existingkeys) => {
   const markdownFiles = await getInputFiles()
   const allSkills = new Set()
   
@@ -105,10 +100,11 @@ export const collectUnmappedSkills = async (alreadyMapped, trueNames) => {
   return Array.from(allSkills) // convert Set to Array
 }
 
-const { trueNames, skillsMapped } = extractSkills()
+const { existingkeys, skillsMapped } = extractSkills()
 const unmappedSkills = await collectUnmappedSkills(skillsMapped)
 unmappedSkills.sort()
-// const skills = await findDuplicateSkills(trueNames, unmappedSkills)
-const skills = { 'agile methodologies': [ 'agile methodologies' ], 'api design': [ 'api design', 'api integrations', 'api rest' ], azure: [ 'azure', 'azure automation', 'azure cli', 'azure landing zones', 'microsoft azure', 'microsoft azure certifications' ], cloud: [ 'cloud', 'cloud deployment', 'cloud solutions design' ], 'data manipulation': [ 'data manipulation', 'data management' ], documentation: [ 'documentation', 'design documentation' ], 'front-end development': [ 'front-end development', 'front-end application analysis' ], 'google cloud': [ 'google cloud', 'google professional cloud devops engineer' ], 'infrastructure as code': [ 'infrastructure as code', 'terraform' ], javascript: [ 'javascript', 'js' ], 'non-relational databases': [ 'non-relational databases', 'mongodb', 'couchbase' ], 'requirements analysis': [ 'requirements analysis', 'functional requirements' ], security: [ 'security', 'firewalls' ], 'stakeholder management': [ 'stakeholder management', 'client-oriented', 'customer-oriented' ], tailwind: [ 'tailwind', 'tailwind css' ], 'team management': [ 'team management', 'teamwork' ] }
+const skills = await findDuplicateSkills(existingkeys, unmappedSkills)
+// const skills = { 'agile methodologies': [ 'agile methodologies' ], 'api design': [ 'api design', 'api integrations', 'api rest' ], azure: [ 'azure', 'azure automation', 'azure cli', 'azure landing zones', 'microsoft azure', 'microsoft azure certifications' ], cloud: [ 'cloud', 'cloud deployment', 'cloud solutions design' ], 'data manipulation': [ 'data manipulation', 'data management' ], documentation: [ 'documentation', 'design documentation' ], 'front-end development': [ 'front-end development', 'front-end application analysis' ], 'google cloud': [ 'google cloud', 'google professional cloud devops engineer' ], 'infrastructure as code': [ 'infrastructure as code', 'terraform' ], javascript: [ 'javascript', 'js' ], 'non-relational databases': [ 'non-relational databases', 'mongodb', 'couchbase' ], 'requirements analysis': [ 'requirements analysis', 'functional requirements' ], security: [ 'security', 'firewalls' ], 'stakeholder management': [ 'stakeholder management', 'client-oriented', 'customer-oriented' ], tailwind: [ 'tailwind', 'tailwind css' ], 'team management': [ 'team management', 'teamwork' ] }
 const processedSkills = cleanSkillMapping(skills)
 console.log(processedSkills)
+
