@@ -1,4 +1,4 @@
-export const skillMapping = {
+export const skillsMapping = {
 	"agile methodologies": ['agile', 'agile methodology', 'agile software development'],
 	"api design": ['api applications', 'api development'],
 	"api rest": ['rest'],

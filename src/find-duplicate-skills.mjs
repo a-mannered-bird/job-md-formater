@@ -5,12 +5,13 @@ import * as fs from 'fs'
 import { getInputFiles, readAndFilterMarkdownFile, mapSkills, outputPath } from './index.mjs'
 import { createAssistant, postMessageAndGetResponse, deleteAssistant, deleteThread } from './utils/chatpgt-utils.mjs'
 import { responseFormat } from './prompting/find_duplicate_skills_response.mjs'
-import { skillMapping } from './utils/skills-mapping.mjs'
+import { skillsMapping } from './utils/skills-mapping.mjs'
+import readline from 'readline'
 
 /**
  * 
  */
-const findDuplicateSkills = async (existingkeys, skills) => {
+const findDuplicateSkills = async (existingKeys, skills) => {
     // Create the assistant
     console.log(`⏳ Creating a new chat GPT assistant and a new thread...`)
     const response = await createAssistant({
@@ -51,11 +52,13 @@ You will receive an javascript array of strings as input. It is a list of skills
     return parsedMessage.skills
 }
 
-const cleanSkillMapping = (skills) => {
+const cleanSkillsMapping = (skills, existingKeys) => {
   const processedSkills = {}
 
   for (const [key, values] of Object.entries(skills)) {
-    const filteredValues = values.filter(value => value !== key)
+    const filteredValues = values.filter(value => {
+      return value !== key && !existingKeys.includes(value)
+    })
     if (filteredValues.length > 0) {
       processedSkills[key] = filteredValues
     }
@@ -69,18 +72,18 @@ const cleanSkillMapping = (skills) => {
  * @returns 
  */
 const extractSkills = () => {
-  const existingkeys = Object.keys(skillMapping)
-  const skillsMapped = [].concat(...Object.values(skillMapping))
-  return { existingkeys, skillsMapped }
+  const existingKeys = Object.keys(skillsMapping)
+  const skillsMapped = [].concat(...Object.values(skillsMapping))
+  return { existingKeys, skillsMapped }
 }
 
 /**
  * 
  * @param {*} alreadyMapped 
- * @param {*} existingkeys 
+ * @param {*} existingKeys 
  * @returns 
  */
-export const collectUnmappedSkills = async (alreadyMapped, existingkeys) => {
+export const collectUnmappedSkills = async (alreadyMapped, existingKeys) => {
   const markdownFiles = await getInputFiles()
   const allSkills = new Set()
   
@@ -99,12 +102,71 @@ export const collectUnmappedSkills = async (alreadyMapped, existingkeys) => {
   
   return Array.from(allSkills) // convert Set to Array
 }
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+})
 
-const { existingkeys, skillsMapped } = extractSkills()
+const askForConfirmation = (question) => {
+  return new Promise((resolve) => {
+    rl.question(question, (answer) => {
+      resolve(answer.toLowerCase() === 'yes' || answer.toLowerCase() === 'y')
+    })
+  })
+}
+
+const exitScript = () => {
+  console.log('Operation cancelled by the user.')
+  rl.close()
+  process.exit(0)
+}
+
+const remapSkills = async (skills) => {
+  const newSkillsMapping = {...skillsMapping}
+  let confirmed = await askForConfirmation('Do you want to proceed with remapping skills? (y/n): ')
+  if (!confirmed) exitScript()
+  for (const [key, duplicates] of Object.entries(skills)) {
+    const keyExists = !!newSkillsMapping[key]
+    if (!keyExists) {
+      confirmed = await askForConfirmation(`Add a new skill group based on the following name: "${key}"? (y/n):`)
+      if (!confirmed) {
+        // TODO: blacklist the key
+        continue
+      }
+    }
+
+    const newValues = (newSkillsMapping[key] || [])
+    for (const duplicate of duplicates) {
+      confirmed = await askForConfirmation(`Do you confirm that "${duplicate}" is the same skill as "${key}"? (y/n):`)
+      if (!confirmed) {
+        // TODO: blacklist the duplicate
+      } else {
+        newValues.push(duplicate)
+      }
+    }
+    newSkillsMapping[key] = newValues
+  }
+  rl.close()
+
+  const sortedNewSkillsMapping = Object.keys(newSkillsMapping)
+    .sort()
+    .reduce((acc, key) => {
+      acc[key] = newSkillsMapping[key]
+      return acc
+    }, {})
+
+  console.log("New skillsMapping:", sortedNewSkillsMapping)
+  fs.writeFileSync(
+    path.join(process.cwd(), 'src/utils', 'skills-mapping.mjs'),
+    `export const skillsMapping = ${JSON.stringify(sortedNewSkillsMapping, null, 2)}`
+  )
+}
+
+const { existingKeys, skillsMapped } = extractSkills()
 const unmappedSkills = await collectUnmappedSkills(skillsMapped)
 unmappedSkills.sort()
-const skills = await findDuplicateSkills(existingkeys, unmappedSkills)
-// const skills = { 'agile methodologies': [ 'agile methodologies' ], 'api design': [ 'api design', 'api integrations', 'api rest' ], azure: [ 'azure', 'azure automation', 'azure cli', 'azure landing zones', 'microsoft azure', 'microsoft azure certifications' ], cloud: [ 'cloud', 'cloud deployment', 'cloud solutions design' ], 'data manipulation': [ 'data manipulation', 'data management' ], documentation: [ 'documentation', 'design documentation' ], 'front-end development': [ 'front-end development', 'front-end application analysis' ], 'google cloud': [ 'google cloud', 'google professional cloud devops engineer' ], 'infrastructure as code': [ 'infrastructure as code', 'terraform' ], javascript: [ 'javascript', 'js' ], 'non-relational databases': [ 'non-relational databases', 'mongodb', 'couchbase' ], 'requirements analysis': [ 'requirements analysis', 'functional requirements' ], security: [ 'security', 'firewalls' ], 'stakeholder management': [ 'stakeholder management', 'client-oriented', 'customer-oriented' ], tailwind: [ 'tailwind', 'tailwind css' ], 'team management': [ 'team management', 'teamwork' ] }
-const processedSkills = cleanSkillMapping(skills)
-console.log(processedSkills)
-
+const skills = await findDuplicateSkills(existingKeys, unmappedSkills)
+// const skills = { 'api design': [ 'api integrations', 'api rest' ], cloud: [ 'cloud deployment', 'cloud solutions design' ], 'data management': [ 'data manipulation', 'data migration support' ], 'data science': [ 'data analysis', 'data engineering' ], devops: [ 'devsecops' ], 'front-end development': [ 'front-end application analysis' ], 'microsoft azure': [ 'microsoft azure certifications' ], 'non-relational databases': [ 'nosql databases' ], 'relational databases': [ 'sql databases' ], 'software development': [ 'software architecture' ], 'ui/ux design': [ 'ui/ux principles' ], 'web services': [ 'webservices' ] }
+const processedSkills = cleanSkillsMapping(skills, existingKeys)
+console.log(path.join(process.cwd(), 'src/utils', 'skills-mapping.mjs'))
+remapSkills(processedSkills)

@@ -19,7 +19,7 @@ import {
 } from './utils/chatpgt-utils.mjs'
 
 import { responseFormat } from './prompting/job_ad_analysis_response.mjs'
-import { skillMapping } from './utils/skills-mapping.mjs'
+import { skillsMapping } from './utils/skills-mapping.mjs'
 
 dotenv.config()
 export const inputPath = process.env.INPUT_PATH || './input-files'
@@ -87,7 +87,7 @@ export const resetAssistant = async () => {
  * for the chatGPT analysis
  */
 export const readAndFilterMarkdownFile = async (file, justRead) => {
-    console.log(`⏳  Reading "${file}"...`)
+    if (!justRead) console.log(`⏳  Reading "${file}"...`)
     const filePath = path.join(inputPath, file)
     const fileContents = fs.readFileSync(filePath, 'utf-8')
 
@@ -118,8 +118,8 @@ export const readAndFilterMarkdownFile = async (file, justRead) => {
 export const mapSkills = (skills) => {
     const newSkills = skills.map(skill => {
         let newSkill = skill.toLowerCase()
-        for (const trueSkill in skillMapping) {
-            if (skillMapping[trueSkill].includes(newSkill)) {
+        for (const trueSkill in skillsMapping) {
+            if (skillsMapping[trueSkill].includes(newSkill)) {
                 console.log(`🧼 Changed skill '${newSkill}' to '${trueSkill}'`)
                 newSkill = trueSkill
                 break
