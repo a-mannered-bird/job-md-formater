@@ -6,6 +6,7 @@ import { getInputFiles, readAndFilterMarkdownFile, mapSkills, outputPath } from 
 import { createAssistant, postMessageAndGetResponse, deleteAssistant, deleteThread } from './utils/chatpgt-utils.mjs'
 import { responseFormat } from './prompting/find_duplicate_skills_response.mjs'
 import { skillsMapping } from './utils/skills-mapping.mjs'
+import { blacklistedKeys, blacklistedMapping } from './utils/blacklisted.mjs'
 import readline from 'readline'
 
 /**
@@ -121,18 +122,37 @@ const exitScript = () => {
   process.exit(0)
 }
 
+/**
+ * sort new skill mapping alphabetically by key
+ */
+const sortMapping = (mapObject) => {
+  return Object.keys(mapObject)
+    .sort()
+    .reduce((acc, key) => {
+      acc[key] = mapObject[key]
+      return acc
+    }, {})
+}
+
 const remapSkills = async (skills) => {
   const newSkillsMapping = {...skillsMapping}
-  let confirmed = await askForConfirmation('Do you want to proceed with remapping skills? (y/n): ')
+  let confirmed = await askForConfirmation('❓ Do you want to proceed with remapping skills? (y/n): ')
   if (!confirmed) exitScript()
   let newGroupsCount = 0
   let newDuplicatesCount = 0
+  const rejectedKeys = []
+  const rejectedDuplicates = {}
   for (const [key, duplicates] of Object.entries(skills)) {
+    // If the key has been refused before, we don't iterate on it
+    if (blacklistedKeys.includes(key)) {
+      console.log(`❌ Ignoring the key ${key} has it been refused before.`)
+      continue
+    }
     const keyExists = !!newSkillsMapping[key]
     if (!keyExists) {
-      confirmed = await askForConfirmation(`Add a new skill group based on the following name: "${key}"? (y/n):`)
+      confirmed = await askForConfirmation(`❓ Add a new skill group based on the following name: "${key}"? (y/n):`)
       if (!confirmed) {
-        // TODO: blacklist the key
+        rejectedKeys.push(key)
         continue
       }
       newGroupsCount++
@@ -140,9 +160,14 @@ const remapSkills = async (skills) => {
 
     const newValues = (newSkillsMapping[key] || [])
     for (const duplicate of duplicates) {
-      confirmed = await askForConfirmation(`Do you confirm that "${duplicate}" is the same skill as "${key}"? (y/n):`)
+      if (blacklistedMapping[key].includes(duplicate)) {
+        console.log(`❌ Ignoring the duplicate ${duplicate} has it been refused before in key ${key}.`)
+        continue
+      }
+      confirmed = await askForConfirmation(`❓ Do you confirm that "${duplicate}" is the same skill as "${key}"? (y/n):`)
       if (!confirmed) {
-        // TODO: blacklist the duplicate
+        blacklistedMapping[key] = (blacklistedMapping[key] || []).concat([duplicate])
+        rejectedDuplicates[key] = (rejectedDuplicates[key] || []).concat([duplicate])
       } else {
         newValues.push(duplicate)
         newDuplicatesCount++
@@ -152,21 +177,28 @@ const remapSkills = async (skills) => {
   }
   rl.close()
 
-  const sortedNewSkillsMapping = Object.keys(newSkillsMapping)
-    .sort()
-    .reduce((acc, key) => {
-      acc[key] = newSkillsMapping[key]
-      return acc
-    }, {})
-
+  const sortedNewSkillsMapping = sortMapping(newSkillsMapping)
+  const sortedBlacklistedMapping = sortMapping(blacklistedMapping)
+  const newBlacklistedKeys = blacklistedKeys.concat(rejectedKeys).sort()
   
   console.log(`${newGroupsCount} new groups and ${newDuplicatesCount} new duplicates skills.`)
-  if (!newGroupsCount && !newDuplicatesCount) return console.log('Nice try chat GPT... 🤷')
-  console.log("Editing skills-mapping.mjs with our new skill mapping:", sortedNewSkillsMapping)
-  fs.writeFileSync(
-    path.join(process.cwd(), 'src/utils', 'skills-mapping.mjs'),
-    `export const skillsMapping = ${JSON.stringify(sortedNewSkillsMapping, null, 2)}`
-  )
+  if (!newGroupsCount && !newDuplicatesCount) console.log('Nice try chat GPT... 🤷')
+  else {
+    console.log("💾 Editing skills-mapping.mjs with our new skill mapping:", sortedNewSkillsMapping)
+    fs.writeFileSync(
+      path.join(process.cwd(), 'src/utils', 'skills-mapping.mjs'),
+      `export const skillsMapping = ${JSON.stringify(sortedNewSkillsMapping, null, 2)}`
+    )
+  }
+
+  if (rejectedKeys.length > 0 || Object.keys(rejectedDuplicates).length > 0) {
+    console.log("💾 Editing blacklisted.mjs with the rejected keys:", rejectedKeys)
+    console.log("💾 Editing blacklisted.mjs with the rejected duplicates:", rejectedDuplicates)
+    fs.writeFileSync(
+      path.join(process.cwd(), 'src/utils', 'blacklisted.mjs'),`
+export const blacklistedKeys = ${JSON.stringify(newBlacklistedKeys, null, 2)}
+export const blacklistedMapping = ${JSON.stringify(sortedBlacklistedMapping, null, 2)}
+`)}
 }
 
 const { existingKeys, skillsMapped } = extractSkills()
