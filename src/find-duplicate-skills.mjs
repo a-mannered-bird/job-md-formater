@@ -178,7 +178,7 @@ const remapSkills = async (suggestedSkillsMapping) => {
 
     // Abort iteration on Blacklisted keys that have been rejected before
     if (blacklistedKeys.includes(key)) {
-      console.log(`❌ Ignoring the key ${key} as it has been rejected before.`)
+      console.log(`❌ Ignoring the key "${key}" as it has been rejected before.`)
       continue
     }
 
@@ -199,7 +199,7 @@ const remapSkills = async (suggestedSkillsMapping) => {
 
       // Ignore blacklisted duplicates
       if ((blacklistedMapping[key] || []).includes(duplicate)) {
-        console.log(`❌ Ignoring the duplicate ${duplicate} has it been refused before in key ${key}.`)
+        console.log(`❌ Ignoring the duplicate "${duplicate}" has it been refused before in key "${key}".`)
         continue
       }
 
