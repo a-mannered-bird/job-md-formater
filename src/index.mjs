@@ -116,17 +116,20 @@ export const readAndFilterMarkdownFile = async (file, justRead) => {
  * Remove duplicates
  */
 export const mapSkills = (skills) => {
+    let hasRemappedSkills = false
     const newSkills = skills.map(skill => {
         let newSkill = skill.toLowerCase()
         for (const trueSkill in skillsMapping) {
             if (skillsMapping[trueSkill].includes(newSkill)) {
-                console.log(`🧼 Changed skill '${newSkill}' to '${trueSkill}'`)
+                hasRemappedSkills = true
                 newSkill = trueSkill
+                console.log(`🧼 Changed skill '${newSkill}' to '${trueSkill}'`)
                 break
             }
         }
         return newSkill
     })
+    if (!hasRemappedSkills) console.log(`✅ No skills needed to be remapped in this file.`)
     return [...new Set(newSkills)] // remove duplicates
 
 }
