@@ -37,7 +37,7 @@ You will receive a JavaScript array of strings as input. It is a list of skills 
 
     // Send message
     const message = `const skills = ${JSON.stringify(skills)}`
-    console.log(`⏳ Sending the list of skills...`)
+    console.log(`⏳ Sending the list of ${skills.length} skills...`)
     const { latestMessage, run } = await postMessageAndGetResponse(response.assistant.id, response.thread.id, message)
 
     // Check results

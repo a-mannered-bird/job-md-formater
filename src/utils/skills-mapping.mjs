@@ -12,6 +12,10 @@ export const skillsMapping = {
   "api rest": [
     "rest"
   ],
+  "automation": [
+    "automation scripts",
+    "automation technologies"
+  ],
   "azure": [
     "azure devops",
     "azure services"
@@ -30,7 +34,8 @@ export const skillsMapping = {
   ],
   "data science": [
     "data analysis",
-    "data exploration techniques"
+    "data exploration techniques",
+    "data engineering"
   ],
   "devops": [
     "devsecops"
