@@ -1,13 +1,19 @@
 import matter from 'gray-matter'
 import * as path from 'path'
 import * as fs from 'fs'
+import readline from 'readline'
+import { exec } from 'child_process'
 
 import { getInputFiles, readAndFilterMarkdownFile, mapSkills, outputPath } from './index.mjs'
 import { createAssistant, postMessageAndGetResponse, deleteAssistant, deleteThread } from './utils/chatpgt-utils.mjs'
 import { responseFormat } from './prompting/find_duplicate_skills_response.mjs'
 import { skillsMapping as oldSkillsMapping } from './utils/skills-mapping.mjs'
 import { blacklistedKeys, blacklistedMapping } from './utils/blacklisted.mjs'
-import readline from 'readline'
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+})
 
 /**
  * Function to find duplicate skills using a GPT assistant
@@ -114,11 +120,6 @@ export const collectUnmappedSkills = async (alreadyMappedSkills) => {
   return Array.from(allSkills) // convert Set to Array
 }
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-})
-
 /**
  * Ask the user for confirmation before continuing the script
  * 
@@ -216,8 +217,6 @@ const remapSkills = async (suggestedSkillsMapping) => {
     newSkillsMapping[key] = newValues
   }
   
-  rl.close()
-
   // Sorting results alphabetically before editing
   const sortedNewSkillsMapping = sortMapping(newSkillsMapping)
   const sortedBlacklistedMapping = sortMapping(blacklistedMapping)
@@ -225,7 +224,8 @@ const remapSkills = async (suggestedSkillsMapping) => {
 
   // Editing skillsMapping.mjs file with results
   console.log(`${newGroupsCount} new groups and ${newDuplicatesCount} new duplicates skills.`)
-  if (!newGroupsCount && !newDuplicatesCount) console.log('Nice try chat GPT... 🤷')
+  const mappingHasChanged = newGroupsCount || newDuplicatesCount
+  if (!mappingHasChanged) console.log('Nice try chat GPT... 🤷')
   else {
     console.log("💾 Editing skills-mapping.mjs with our new skill mapping:", sortedNewSkillsMapping)
     fs.writeFileSync(
@@ -244,12 +244,33 @@ export const blacklistedKeys = ${JSON.stringify(newBlacklistedKeys, null, 2)}
 export const blacklistedMapping = ${JSON.stringify(sortedBlacklistedMapping, null, 2)}
 `)
   }
+
+  return mappingHasChanged
+}
+
+const askForTrimming = async () => {
+  let confirmed = await askForConfirmation('🧼 Do you want to use your new skillsMapping to trim the skills on your input folder files? (y/n): ')
+  if (confirmed) {
+    exec('npm run trim', (error, stdout, stderr) => {
+      if (error) {
+      console.error(`❌ Error executing npm run trim: ${error.message}`)
+      return
+      }
+      if (stderr) {
+      console.error(`⚠️ stderr: ${stderr}`)
+      return
+      }
+      console.log(`📄 stdout: ${stdout}`)
+    })
+  }
 }
 
 const { existingKeys, skillsMapped } = extractSkills()
 const unmappedSkills = await collectUnmappedSkills(skillsMapped)
 unmappedSkills.sort()
-const skills = await findDuplicateSkills(existingKeys, unmappedSkills)
-// const skills = { 'api design': ['api integrations', 'api rest'], cloud: ['cloud deployment', 'cloud solutions design'], 'data management': ['data manipulation', 'data migration support'], 'data science': ['data analysis', 'data engineering'], devops: ['devsecops'], 'front-end development': ['front-end application analysis'], 'microsoft azure': ['microsoft azure certifications'], 'non-relational databases': ['nosql databases'], 'relational databases': ['sql databases'], 'software development': ['software architecture'], 'ui/ux design': ['ui/ux principles'], 'web services': ['webservices'] }
+// const skills = await findDuplicateSkills(existingKeys, unmappedSkills)
+const skills = { 'agile methodologies': ['foobar'] }
 const processedSkills = cleanSkillsMapping(skills, existingKeys)
-remapSkills(processedSkills)
+const mappingHasChanged = await remapSkills(processedSkills)
+if (mappingHasChanged) await askForTrimming()
+rl.close()
