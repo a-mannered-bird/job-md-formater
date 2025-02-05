@@ -165,18 +165,24 @@ const sortMapping = (mapObject) => {
  */
 const remapSkills = async (suggestedSkillsMapping) => {
   const newSkillsMapping = { ...oldSkillsMapping }
+
   let confirmed = await askForConfirmation('❓ Do you want to proceed with remapping skills? (y/n): ')
   if (!confirmed) exitScript()
+
   let newGroupsCount = 0
   let newDuplicatesCount = 0
   const rejectedKeys = []
   const rejectedDuplicates = {}
+
   for (const [key, duplicates] of Object.entries(suggestedSkillsMapping)) {
-    // If the key has been refused before, we don't iterate on it
+
+    // Abort iteration on Blacklisted keys that have been rejected before
     if (blacklistedKeys.includes(key)) {
-      console.log(`❌ Ignoring the key ${key} has it been refused before.`)
+      console.log(`❌ Ignoring the key ${key} as it has been rejected before.`)
       continue
     }
+
+    // Check if we need to create a new skill group
     const keyExists = !!newSkillsMapping[key]
     if (!keyExists) {
       confirmed = await askForConfirmation(`❓ Add a new skill group based on the following name: "${key}"? (y/n):`)
@@ -187,12 +193,17 @@ const remapSkills = async (suggestedSkillsMapping) => {
       newGroupsCount++
     }
 
+    // Iterate on each duplicate belong to a skill group
     const newValues = (newSkillsMapping[key] || [])
     for (const duplicate of duplicates) {
+
+      // Ignore blacklisted duplicates
       if ((blacklistedMapping[key] || []).includes(duplicate)) {
         console.log(`❌ Ignoring the duplicate ${duplicate} has it been refused before in key ${key}.`)
         continue
       }
+
+      // Ask user if the duplicate gets added to the skill group or blacklisted
       confirmed = await askForConfirmation(`❓ Do you confirm that "${duplicate}" is the same skill as "${key}"? (y/n):`)
       if (!confirmed) {
         blacklistedMapping[key] = (blacklistedMapping[key] || []).concat([duplicate])
@@ -204,12 +215,15 @@ const remapSkills = async (suggestedSkillsMapping) => {
     }
     newSkillsMapping[key] = newValues
   }
+  
   rl.close()
 
+  // Sorting results alphabetically before editing
   const sortedNewSkillsMapping = sortMapping(newSkillsMapping)
   const sortedBlacklistedMapping = sortMapping(blacklistedMapping)
   const newBlacklistedKeys = blacklistedKeys.concat(rejectedKeys).sort()
 
+  // Editing skillsMapping.mjs file with results
   console.log(`${newGroupsCount} new groups and ${newDuplicatesCount} new duplicates skills.`)
   if (!newGroupsCount && !newDuplicatesCount) console.log('Nice try chat GPT... 🤷')
   else {
@@ -220,6 +234,7 @@ const remapSkills = async (suggestedSkillsMapping) => {
     )
   }
 
+    // Editing blacklisted.mjs file with results
   if (rejectedKeys.length > 0 || Object.keys(rejectedDuplicates).length > 0) {
     console.log("💾 Editing blacklisted.mjs with the rejected keys:", rejectedKeys)
     console.log("💾 Editing blacklisted.mjs with the rejected duplicates:", rejectedDuplicates)
