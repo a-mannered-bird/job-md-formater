@@ -268,8 +268,8 @@ const askForTrimming = async () => {
 const { existingKeys, skillsMapped } = extractSkills()
 const unmappedSkills = await collectUnmappedSkills(skillsMapped)
 unmappedSkills.sort()
-// const skills = await findDuplicateSkills(existingKeys, unmappedSkills)
-const skills = { 'agile methodologies': ['foobar'] }
+const skills = await findDuplicateSkills(existingKeys, unmappedSkills)
+// const skills = { 'agile methodologies': ['foobar'] }
 const processedSkills = cleanSkillsMapping(skills, existingKeys)
 const mappingHasChanged = await remapSkills(processedSkills)
 if (mappingHasChanged) await askForTrimming()
