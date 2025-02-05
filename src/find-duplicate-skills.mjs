@@ -248,6 +248,9 @@ export const blacklistedMapping = ${JSON.stringify(sortedBlacklistedMapping, nul
   return mappingHasChanged
 }
 
+/**
+ * Ask the user if they want to use the trim command and run it
+ */
 const askForTrimming = async () => {
   let confirmed = await askForConfirmation('🧼 Do you want to use your new skillsMapping to trim the skills on your input folder files? (y/n): ')
   if (confirmed) {
