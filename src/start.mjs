@@ -1,2 +1,2 @@
-import {processMarkdownFiles} from '../index.mjs'
+import {processMarkdownFiles} from './index.mjs'
 processMarkdownFiles()

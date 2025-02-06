@@ -122,8 +122,8 @@ export const mapSkills = (skills) => {
         for (const trueSkill in skillsMapping) {
             if (skillsMapping[trueSkill].includes(newSkill)) {
                 hasRemappedSkills = true
-                newSkill = trueSkill
                 console.log(`🧼 Changed skill '${newSkill}' to '${trueSkill}'`)
+                newSkill = trueSkill
                 break
             }
         }
@@ -187,7 +187,7 @@ export const getInputFiles = async () => {
  */
 export const processMarkdownFiles = async () => {
 
-    const markdownFiles = getInputFiles()
+    const markdownFiles = await getInputFiles()
 
     // If the assistant doesn't exist yet, create and update the IDs.
     if (!assistantId || !threadId) {

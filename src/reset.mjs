@@ -1,2 +1,2 @@
-import {resetAssistant} from '../index.mjs'
+import {resetAssistant} from './index.mjs'
 resetAssistant()
